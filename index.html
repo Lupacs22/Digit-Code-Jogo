@@ -289,34 +289,34 @@ const XOR_MASK = 0xA5B6C; // 676332
 const toB36 = n => n.toString(36).toUpperCase();
 const fromB36 = s => parseInt(s,36);
 /* Gera ID: base36(m) + chk(base36 de 2 chars), sem separadores */
-
-function _idMapDigitsToLetters(str){
-  // 0-9 -> K T (K=0, L=1, ..., T=9)
-  return str.replace(/[0-9]/g, ch => String.fromCharCode('K'.charCodeAt(0) + (ch.charCodeAt(0) - '0'.charCodeAt(0))));
-}
-function _idUnmapLettersToDigits(str){
-  // K-T -> 0-9
-  return str.replace(/[K-T]/g, ch => String('0123456789'[ch.charCodeAt(0) - 'K'.charCodeAt(0)]));
-}
 function encodeId(codeStr){
   const n = parseInt(codeStr,10);
+  if (!Number.isFinite(n)) return null;
   const m = n ^ XOR_MASK;
   const chk = m % 97;
-  const base = toB36(m);
-  const chk2 = toB36(chk).padStart(2,'0');
-  return (base + chk2).replace(/[^A-Z]/g,''); // garante alfanumérico
+  const base = m.toString(36).toUpperCase();         // 0-9A-Z
+  const chk2 = chk.toString(36).toUpperCase().padStart(2,'0'); // 2 chars
+  const raw = base + chk2;
+  // Mapear dígitos 0-9 -> letras K-T (0->K, 1->L, ..., 9->T) para ficar somente A-Z
+  const mapped = raw.replace(/[0-9]/g, ch => String.fromCharCode('K'.charCodeAt(0) + (ch.charCodeAt(0) - 48)));
+  return mapped;
 }
 /* Decodifica: últimos 2 chars = checksum; resto = base */
 function decodeId(id){
-  const clean = _idUnmapLettersToDigits((id||'').toUpperCase().replace(/[^A-Z]/g,''));if(clean.length < 3) return null;
-  const base = clean.slice(0,-2);
-  const chkStr = clean.slice(-2);
-  const m = fromB36(base), chk = fromB36(chkStr);
-  if(Number.isNaN(m) || Number.isNaN(chk)) return null;
-  if(m % 97 !== chk) return null;
+  // Manter apenas letras A-Z (ID deve ser somente letras)
+  const cleanLetters = (id||'').toUpperCase().replace(/[^A-Z]/g,'');
+  // Desmapear K-T -> 0-9
+  const demapped = cleanLetters.replace(/[K-T]/g, ch => '0123456789'[ch.charCodeAt(0) - 'K'.charCodeAt(0)]);
+  if (demapped.length < 3) return null;
+  const base = demapped.slice(0, -2);
+  const chkStr = demapped.slice(-2);
+  const m = parseInt(base, 36);
+  const chk = parseInt(chkStr, 36);
+  if (Number.isNaN(m) || Number.isNaN(chk)) return null;
+  if (m % 97 !== chk) return null;
   const n = m ^ XOR_MASK;
-  if(!(n>=0 && n<=999999)) return null;
-  return n.toString().padStart(6,'0');
+  if (!(n >= 0 && n <= 999999)) return null;
+  return n.toString().padStart(6, '0');
 }
 
 /* 7 segmentos por dígito */
@@ -347,7 +347,8 @@ function digitIndexForH(col,row){
   if(col==='B') return top?0:3;
   if(col==='E') return top?1:4;
   if(col==='H') return top?2:5;
-  const __ret = null;return _idMapDigitsToLetters(__ret);}
+  return null;
+}
 function digitIndexForV(col,row){
   const top = TOP_ROWS.has(row);
   if(col==='A'||col==='C') return {idx: top?0:3, side: col==='A'?'L':'R'};
@@ -722,7 +723,7 @@ function init(){
 
   // ENTRAR POR ID: força UPPERCASE e apenas alfanuméricos, e aplica
   els.joinId.addEventListener('input', ()=>{
-    const clean = els.joinId.value.toUpperCase().replace(/[^A-Z]/g,'');
+    const clean = els.joinId.value.toUpperCase().replace(/[^0-9A-Z]/g,'');
     if(els.joinId.value !== clean) els.joinId.value = clean;
   });
   els.btnJoinId.addEventListener('click', ()=>{
