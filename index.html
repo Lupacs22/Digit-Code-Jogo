@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Digit Code – Modo Jogo (7 segmentos) • com ID</title>
+<style>
+  :root { 
+    --btn-fz: 14px;
+    --ans-fz: 14px;
+    --ans-fw: 700;
+
+    --lc-fg: #0a2a7a;   --lc-bg: #eaf1ff; --lc-bd: #6a8cff;
+    --par-fg:#0a6a2a;   --par-bg:#eafaf0; --par-bd:#52c16a;
+    --cmp-fg:#7a4a0a;   --cmp-bg:#fff4e6; --cmp-bd:#ffb65c;
+    --seg-fg:#4a0a7a;   --seg-bg:#f5eaff; --seg-bd:#b18cff;
+
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  }
+  body { margin: 16px; }
+  h1 { margin: 0 0 12px; font-size: 20px; }
+  h2 { margin: 18px 0 8px; font-size: 16px; }
+  fieldset { border: 1px solid #ddd; border-radius: 8px; padding: 12px; position: relative; }
+  legend { padding: 0 6px; font-weight: 600; }
+  label { display:block; margin: 6px 0 2px; font-size: 13px; }
+  select, input[type="number"], input[type="text"] { width: 100%; padding: 6px 8px; border: 1px solid #bbb; border-radius: 6px; }
+  button { padding: 8px 10px; border: 1px solid #999; background: #f6f6f6; border-radius: 6px; cursor: pointer; font-size: var(--btn-fz); }
+  button:hover { background: #eee; }
+
+  /* Layout principal: 2 colunas; no mobile vira 1 */
+  .wrap { display: grid; grid-template-columns: 380px 1fr; gap: 16px; align-items: start; position: relative; }
+  .wrap > div { position: relative; z-index: 0; }
+  .wrap > div:first-child { z-index: 2; }
+  @media (max-width: 860px){ .wrap { grid-template-columns: 1fr; } }
+
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .actions { display:flex; gap:10px; flex-wrap:wrap; align-items: center; }
+  .hint { color:#555; font-size:12px; }
+  .muted { color:#666; font-size:12px; }
+  .pill { display:inline-block; padding: 2px 6px; font-size: 12px; border-radius: 999px; background:#eef; border:1px solid #99c; margin-right:6px; }
+  .pill.bold { font-weight: 700; } /* ID em negrito */
+  .list { border:1px solid #ddd; border-radius:8px; padding:10px; height:240px; overflow:auto; background:#fff; }
+  .ok { color:#0a5; font-weight:600; }
+  .bad { color:#b00; font-weight:600; }
+
+  /* badges de resposta */
+  .ans-badge {
+    font-size: var(--ans-fz);
+    font-weight: var(--ans-fw);
+    line-height: 1;
+    border-radius: 999px;
+    padding: 6px 12px;
+    border: 2px solid transparent;
+    box-shadow: 0 1px 0 rgba(0,0,0,.05);
+    white-space: nowrap;
+  }
+  .ans-lc  { color: var(--lc-fg);  background: var(--lc-bg);  border-color: var(--lc-bd); font-size:16px; padding:5px 10px; }
+  .ans-par { color: var(--par-fg); background: var(--par-bg); border-color: var(--par-bd); }
+  .ans-cmp { color: var(--cmp-fg); background: var(--cmp-bg); border-color: var(--cmp-bd); }
+  .ans-seg { color: var(--seg-fg); background: var(--seg-bg); border-color: var(--seg-bd); }
+
+  /* Resultado do palpite (badge grande) */
+  .result-badge {
+    font-size: 14px;
+    font-weight: 800;
+    line-height: 1;
+    border-radius: 999px;
+    padding: 8px 14px;
+    border: 2px solid transparent;
+    display: inline-block;
+    box-shadow: 0 1px 0 rgba(0,0,0,.05);
+  }
+  .result-ok   { color: var(--par-fg); background: var(--par-bg); border-color: var(--par-bd); }
+  .result-warn { color: var(--cmp-fg); background: var(--cmp-bg); border-color: var(--cmp-bd); }
+  .result-bad  { color: #7a0a0a; background: #ffecec; border-color: #ff9a9a; }
+
+  /* Display 7 segmentos */
+  .seven-wrap { margin-top:8px; }
+  .seven-row { display:flex; gap:20px; margin-bottom: 8px; justify-content: center; }
+  .digit { position: relative; width: 76px; height: 126px; }
+  .seg { position: absolute; background: #ddd; border-radius: 4px; transition: background .15s, opacity .15s; opacity: .7; }
+  .seg.on { background: #e11; opacity: 1; }
+  .seg.a, .seg.g, .seg.d { left: 12px; right: 12px; height: 10px; }
+  .seg.a { top: 10px; }
+  .seg.g { top: 58px; }
+  .seg.d { bottom: 10px; }
+  .seg.f, .seg.e { left: 6px; width: 10px; }
+  .seg.b, .seg.c { right: 6px; width: 10px; }
+  .seg.f { top: 18px; height: 40px; }
+  .seg.b { top: 18px; height: 40px; }
+  .seg.e { top: 70px; height: 40px; }
+  .seg.c { top: 70px; height: 40px; }
+
+  /* Legendas acima dos dígitos (sempre visíveis, negrito) */
+  .labels { display:flex; gap:20px; width:max-content; margin: 0 auto 6px; font-weight:700; }
+  .labels span { display:inline-block; width:76px; text-align:center; font-size:13px; color:#222; }
+
+  /* Mobile: reduz tamanho dos dígitos */
+  @media (max-width: 480px){
+    .digit { width: 60px; height: 102px; }
+    .seg.a, .seg.g, .seg.d { left: 10px; right: 10px; height: 8px; }
+    .seg.a { top: 8px; }
+    .seg.g { top: 47px; }
+    .seg.d { bottom: 8px; }
+    .seg.f, .seg.e { left: 5px; width: 8px; }
+    .seg.b, .seg.c { right: 5px; width: 8px; }
+    .seg.f { top: 14px; height: 34px; }
+    .seg.b { top: 14px; height: 34px; }
+    .seg.e { top: 58px; height: 34px; }
+    .seg.c { top: 58px; height: 34px; }
+    .labels span { width: 60px; }
+  }
+
+  /* Palpite 2x3 */
+  .guess-grid { display:grid; grid-template-columns: repeat(3,56px); grid-auto-rows: 56px; gap:10px; align-items:center; justify-content:center; }
+  .guess-cell { display:flex; align-items:center; justify-content:center; }
+  .guess-input { width:100%; height:100%; text-align:center; font-size:22px; border:1px solid #bbb; border-radius:8px; }
+  .guess-actions { display:flex; gap:10px; align-items:center; justify-content:center; margin-top:10px; flex-wrap:wrap; }
+
+  /* Destaque de status do jogo */
+  #game-status { font-size: 14px; font-weight: 800; }
+</style>
+</head>
+<body>
+  <h1>Digit Code – Modo Jogo (7 segmentos)</h1>
+  <div class="hint">
+    O sistema sorteia um <b>código</b> de 6 dígitos (T U V / W X Y). Faça perguntas e receba respostas consistentes com o código.
+    Use <b>Testar solução</b> para conferir seu palpite.
+  </div></br>
+
+  <div class="wrap">
+    <!-- Coluna ESQUERDA: perguntas e histórico -->
+    <div>
+      <fieldset>
+        <legend>Novo jogo</legend>
+        <div class="actions">
+          <button id="btn-new">Sortear novo código</button>
+          <span id="game-status" class="muted">Um código está ativo.</span>
+        </div>
+        <div class="row" style="margin-top:8px; align-items:center;">
+          <div>
+            <label>ID do código</label>
+            <div class="actions">
+              <span id="share-id" class="pill bold">—</span>
+            </div>
+          </div>
+          <div>
+            <label for="join-id">Entrar por ID</label>
+            <div class="actions" style="gap:6px;">
+              <input id="join-id" type="text" placeholder="ex.: AB12C3F" style="flex:1; min-width:140px;" />
+              <button id="btn-join-id" type="button">Usar ID</button>
+            </div>
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset style="margin-top:12px;">
+        <legend>Fazer pergunta</legend>
+
+        <h2>1) Quantidade em Linha/Coluna</h2>
+        <div class="row">
+          <div>
+            <label for="lc-type">Tipo</label>
+            <select id="lc-type">
+              <option value="col">Coluna (A–I)</option>
+              <option value="row">Linha (J–S)</option>
+            </select>
+          </div>
+          <div>
+            <label for="lc-id">Linha/Coluna</label>
+            <select id="lc-id"></select>
+          </div>
+        </div>
+        <div class="actions" style="margin-top:6px">
+          <button id="ask-lc">Perguntar</button>
+          <span id="ans-lc" class="ans-badge ans-lc">—</span>
+        </div>
+
+        <h2>2) Dígito (T–Y) par/ímpar</h2>
+        <div class="row">
+          <div>
+            <label for="parity-pos">Posição</label>
+            <select id="parity-pos"></select>
+          </div>
+        </div>
+        <div class="actions" style="margin-top:6px">
+          <button id="ask-parity">Perguntar</button>
+          <span id="ans-parity" class="ans-badge ans-par">—</span>
+        </div>
+
+        <h2>3) Qual dígito é maior entre adjacentes</h2>
+        <div>
+          <label for="cmp-pair">Par de dígitos</label>
+          <select id="cmp-pair">
+            <option value="T-U">T–U</option>
+            <option value="U-V">U–V</option>
+            <option value="W-X">W–X</option>
+            <option value="X-Y">X–Y</option>
+            <option value="T-W">T–W</option>
+            <option value="U-X">U–X</option>
+            <option value="V-Y">V–Y</option>
+          </select>
+        </div>
+        <div class="actions" style="margin-top:6px">
+          <button id="ask-cmp">Perguntar</button>
+          <span id="ans-cmp" class="ans-badge ans-cmp">—</span>
+        </div>
+
+        <h2>4) Segmento em (coluna, linha)</h2>
+        <div class="row">
+          <div>
+            <label for="seg-col">Coluna</label>
+            <select id="seg-col"></select>
+          </div>
+          <div>
+            <label for="seg-row">Linha</label>
+            <select id="seg-row"></select>
+          </div>
+        </div>
+        <div class="hint" id="seg-desc">Ex.: (B, L)= segmento g de T; (E, Q)= g de X; (A, K)= f de T; (C, R)= c de W.</div>
+        <div class="actions" style="margin-top:6px">
+          <button id="ask-seg">Perguntar</button>
+          <span id="ans-seg" class="ans-badge ans-seg">—</span>
+        </div>
+      </fieldset>
+
+      <fieldset style="margin-top:12px;">
+        <legend>Testar solução</legend>
+        <div class="guess-grid" aria-label="Palpite (2x3)">
+          <div class="guess-cell"><input id="g-T" maxlength="1" inputmode="numeric" pattern="\\d" class="guess-input" aria-label="T" /></div>
+          <div class="guess-cell"><input id="g-U" maxlength="1" inputmode="numeric" pattern="\\d" class="guess-input" aria-label="U" /></div>
+          <div class="guess-cell"><input id="g-V" maxlength="1" inputmode="numeric" pattern="\\d" class="guess-input" aria-label="V" /></div>
+          <div class="guess-cell"><input id="g-W" maxlength="1" inputmode="numeric" pattern="\\d" class="guess-input" aria-label="W" /></div>
+          <div class="guess-cell"><input id="g-X" maxlength="1" inputmode="numeric" pattern="\\d" class="guess-input" aria-label="X" /></div>
+          <div class="guess-cell"><input id="g-Y" maxlength="1" inputmode="numeric" pattern="\\d" class="guess-input" aria-label="Y" /></div>
+        </div>
+        <div class="guess-actions">
+          <button id="btn-guess">Testar solução</button>
+          <button id="btn-clear-guess" type="button">Limpar palpite</button>
+        </div>
+        <div id="guess-result" class="hint" style="text-align:center;margin-top:6px;"></div>
+      </fieldset>
+
+      <fieldset style="margin-top:12px;">
+        <legend>Histórico de perguntas/respostas</legend>
+        <div class="actions" style="margin-bottom:6px;">
+          <button id="btn-clear-qa">Limpar histórico</button>
+        </div>
+        <div id="qa" class="list"></div>
+      </fieldset>
+    </div>
+
+    <!-- Coluna DIREITA (vai para baixo no mobile) -->
+    <div>
+      <fieldset>
+        <legend>Display (7 segmentos)</legend>
+        <div class="muted">Mostra o código <i>após</i> você acertar (ou se clicar “Revelar”).</div>
+        <div class="actions" style="margin:6px 0 10px;">
+          <button id="btn-reveal">Revelar código</button>
+          <span id="reveal-status" class="muted"></span>
+        </div>
+
+        <!-- Legendas ACIMA (negrito) – agora SEMPRE visíveis -->
+        <div id="labels-top" class="labels"><span>T</span><span>U</span><span>V</span></div>
+        <div class="seven-wrap">
+          <div class="seven-row" id="row-top"></div>
+          <div id="labels-bot" class="labels"><span>W</span><span>X</span><span>Y</span></div>
+          <div class="seven-row" id="row-bot"></div>
+        </div>
+      </fieldset>
+    </div>
+  </div>
+
+<script>
+/* ===== Utilitários e dados ===== */
+const COL_LABELS = ['A','B','C','D','E','F','G','H','I'];
+const ROW_LABELS = ['J','K','L','M','N','O','P','Q','R','S'];
+const POS_LABELS = ['T','U','V','W','X','Y'];
+
+const TOP_ROWS = new Set(['J','K','L','M','N']);
+const H_ROWS   = new Set(['J','L','N','O','Q','S']);
+const V_ROWS   = new Set(['K','M','P','R']);
+const H_COLS   = new Set(['B','E','H']);
+const V_COLS   = new Set(['A','C','D','F','G','I']);
+
+/* ===== Compartilhamento por ID (sem backend) ===== */
+/* Agora o ID é apenas alfanumérico (sem hífen) e UPPERCASE */
+const XOR_MASK = 0xA5B6C; // 676332
+const toB36 = n => n.toString(36).toUpperCase();
+const fromB36 = s => parseInt(s,36);
+/* Gera ID: base36(m) + chk(base36 de 2 chars), sem separadores */
+function encodeId(codeStr){
+  const n = parseInt(codeStr,10);
+  const m = n ^ XOR_MASK;
+  const chk = m % 97;
+  const base = toB36(m);
+  const chk2 = toB36(chk).padStart(2,'0');
+  return (base + chk2).replace(/[^0-9A-Z]/g,''); // garante alfanumérico
+}
+/* Decodifica: últimos 2 chars = checksum; resto = base */
+function decodeId(id){
+  const clean = (id||'').toUpperCase().replace(/[^0-9A-Z]/g,'');
+  if(clean.length < 3) return null;
+  const base = clean.slice(0,-2);
+  const chkStr = clean.slice(-2);
+  const m = fromB36(base), chk = fromB36(chkStr);
+  if(Number.isNaN(m) || Number.isNaN(chk)) return null;
+  if(m % 97 !== chk) return null;
+  const n = m ^ XOR_MASK;
+  if(!(n>=0 && n<=999999)) return null;
+  return n.toString().padStart(6,'0');
+}
+
+/* 7 segmentos por dígito */
+const DIGIT_SEGS = {
+  0: {a:1,b:1,c:1,d:1,e:1,f:1,g:0},
+  1: {a:0,b:1,c:1,d:0,e:0,f:0,g:0},
+  2: {a:1,b:1,c:0,d:1,e:1,f:0,g:1},
+  3: {a:1,b:1,c:1,d:1,e:0,f:0,g:1},
+  4: {a:0,b:1,c:1,d:0,e:0,f:1,g:1},
+  5: {a:1,b:0,c:1,d:1,e:0,f:1,g:1},
+  6: {a:1,b:0,c:1,d:1,e:1,f:1,g:1},
+  7: {a:1,b:1,c:1,d:0,e:0,f:0,g:0},
+  8: {a:1,b:1,c:1,d:1,e:1,f:1,g:1},
+  9: {a:1,b:1,c:1,d:1,e:0,f:1,g:1}
+};
+
+function segFlags(d){
+  const s = DIGIT_SEGS[d];
+  return {
+    hTop: s.a?1:0, hMid: s.g?1:0, hBot: s.d?1:0,
+    vTopL: s.f?1:0, vTopR: s.b?1:0, vBotL: s.e?1:0, vBotR: s.c?1:0
+  };
+}
+const flagsForCode = code => Array.from(code).map(ch=>segFlags(Number(ch)));
+
+function digitIndexForH(col,row){
+  const top = TOP_ROWS.has(row);
+  if(col==='B') return top?0:3;
+  if(col==='E') return top?1:4;
+  if(col==='H') return top?2:5;
+  return null;
+}
+function digitIndexForV(col,row){
+  const top = TOP_ROWS.has(row);
+  if(col==='A'||col==='C') return {idx: top?0:3, side: col==='A'?'L':'R'};
+  if(col==='D'||col==='F') return {idx: top?1:4, side: col==='D'?'L':'R'};
+  if(col==='G'||col==='I') return {idx: top?2:5, side: col==='G'?'L':'R'};
+  return null;
+}
+function hType(row){ if(row==='J'||row==='O')return'hTop'; if(row==='L'||row==='Q')return'hMid'; if(row==='N'||row==='S')return'hBot'; return null; }
+function vType(row,side){ if(row==='K'||row==='P')return side==='L'?'vTopL':'vTopR'; if(row==='M'||row==='R')return side==='L'?'vBotL':'vBotR'; return null; }
+function segmentFromCoord(col,row){
+  if(H_ROWS.has(row) && H_COLS.has(col)){ const idx=digitIndexForH(col,row),key=hType(row); return (idx===null||!key)?null:{idx,key}; }
+  if(V_ROWS.has(row) && V_COLS.has(col)){ const info=digitIndexForV(col,row); if(!info) return null; const key=vType(row,info.side); return key?{idx:info.idx,key}:null; }
+  return null;
+}
+function rowCount(row,f){
+  if(row==='J') return f[0].hTop + f[1].hTop + f[2].hTop;
+  if(row==='K') return (f[0].vTopL+f[0].vTopR) + (f[1].vTopL+f[1].vTopR) + (f[2].vTopL+f[2].vTopR);
+  if(row==='L') return f[0].hMid + f[1].hMid + f[2].hMid;
+  if(row==='M') return (f[0].vBotL+f[0].vBotR) + (f[1].vBotL+f[1].vBotR) + (f[2].vBotL+f[2].vBotR);
+  if(row==='N') return f[0].hBot + f[1].hBot + f[2].hBot;
+  if(row==='O') return f[3].hTop + f[4].hTop + f[5].hTop;
+  if(row==='P') return (f[3].vTopL+f[3].vTopR) + (f[4].vTopL+f[4].vTopR) + (f[5].vTopL+f[5].vTopR);
+  if(row==='Q') return f[3].hMid + f[4].hMid + f[5].hMid;
+  if(row==='R') return (f[3].vBotL+f[3].vBotR) + (f[4].vBotL+f[4].vBotR) + (f[5].vBotL+f[5].vBotR);
+  if(row==='S') return f[3].hBot + f[4].hBot + f[5].hBot;
+  return null;
+}
+function colCount(col,f){
+  if(col==='A') return f[0].vTopL+f[0].vBotL + f[3].vTopL+f[3].vBotL;
+  if(col==='B') return f[0].hTop+f[0].hMid+f[0].hBot + f[3].hTop+f[3].hMid+f[3].hBot;
+  if(col==='C') return f[0].vTopR+f[0].vBotR + f[3].vTopR+f[3].vBotR;
+  if(col==='D') return f[1].vTopL+f[1].vBotL + f[4].vTopL+f[4].vBotL;
+  if(col==='E') return f[1].hTop+f[1].hMid+f[1].hBot + f[4].hTop+f[4].hMid+f[4].hBot;
+  if(col==='F') return f[1].vTopR+f[1].vBotR + f[4].vTopR+f[4].vBotR;
+  if(col==='G') return f[2].vTopL+f[2].vBotL + f[5].vTopL+f[5].vBotL;
+  if(col==='H') return f[2].hTop+f[2].hMid+f[2].hBot + f[5].hTop+f[5].hMid+f[5].hBot;
+  if(col==='I') return f[2].vTopR+f[2].vBotR + f[5].vTopR+f[5].vBotR;
+  return null;
+}
+
+/* Regra: não permitir dígitos iguais nos pares adjacentes */
+function noAdjEquals(code){
+  const d = code.split('').map(Number);
+  return (d[0]!==d[1] && d[1]!==d[2] && d[3]!==d[4] && d[4]!==d[5] && d[0]!==d[3] && d[1]!==d[4] && d[2]!==d[5]);
+}
+
+/* Estado do jogo */
+function randomCode(){
+  while(true){
+    const c = Math.floor(Math.random()*1_000_000).toString().padStart(6,'0');
+    if(noAdjEquals(c)) return c;
+  }
+}
+let secret = randomCode();
+let revealed = false;
+let qaCount = 0;
+
+/* ===== Novo: função única pra sortear + limpar ===== */
+function setNewSecret(){
+  secret = randomCode();
+  revealed = false;
+  qaCount = 0;
+  document.getElementById('game-status').textContent = 'Novo código sorteado!';
+  document.getElementById('reveal-status').textContent = '';
+  // Limpar histórico + respostas + palpite
+  document.getElementById('qa').innerHTML = '';
+  clearAnswers();
+  clearGuess(true);
+  renderSecretDisplay(); // display apagado (mas com legendas visíveis)
+  updateShare();
+}
+
+/* Helpers UI */
+let els = {};
+function option(text, value){ const o=document.createElement('option'); o.textContent=text; o.value=value; return o; }
+
+function fillSelectors(){
+  // Linha/Coluna
+  function fillLcIds(){
+    const labels = els.lcType.value==='col' ? COL_LABELS : ROW_LABELS;
+    els.lcId.innerHTML=''; labels.forEach(l=> els.lcId.appendChild(option(l,l)));
+  }
+  fillLcIds();
+  els.lcType.addEventListener('change', ()=>{ fillLcIds(); els.ansLc.textContent='—'; });
+  els.lcId.addEventListener('change', ()=>{ els.ansLc.textContent='—'; });
+
+  // Paridade
+  els.parityPos.innerHTML=''; POS_LABELS.forEach((p,i)=> els.parityPos.appendChild(option(p,i)));
+  els.parityPos.addEventListener('change', ()=>{ els.ansParity.textContent='—'; });
+
+  // Segmentos: popular colunas e, ao escolher uma, filtrar linhas cabíveis
+  els.segCol.innerHTML=''; COL_LABELS.forEach(l=> els.segCol.appendChild(option(l,l)));
+  refillSegRows();
+  els.segCol.addEventListener('change', ()=>{ refillSegRows(); els.ansSeg.textContent='—'; updateSegDesc(); });
+  els.segRow.addEventListener('change', ()=>{ els.ansSeg.textContent='—'; updateSegDesc(); });
+
+  // Comparação
+  els.cmpPair.addEventListener('change', ()=>{ els.ansCmp.textContent='—'; });
+
+  updateSegDesc();
+}
+
+function refillSegRows(){
+  const col = els.segCol.value;
+  let rowsAllowed = [];
+  if(H_COLS.has(col)) rowsAllowed = Array.from(H_ROWS);
+  else if(V_COLS.has(col)) rowsAllowed = Array.from(V_ROWS);
+  else rowsAllowed = ROW_LABELS.slice(); // fallback
+  // preservar seleção se ainda for válida
+  const prev = els.segRow.value;
+  els.segRow.innerHTML='';
+  rowsAllowed.forEach(r=> els.segRow.appendChild(option(r,r)));
+  if(rowsAllowed.includes(prev)) els.segRow.value = prev;
+}
+
+function updateSegDesc(){
+  const col = els.segCol.value, row = els.segRow.value;
+  const map = segmentFromCoord(col,row);
+  if(!map){ els.segDesc.textContent=`(${col}, ${row}) não referencia um segmento válido.`; els.segDesc.className='hint bad'; return; }
+  const pos = POS_LABELS[map.idx];
+  const names = {hTop:"a (topo)", hMid:"g (meio)", hBot:"d (base)", vTopL:"f (sup esq)", vTopR:"b (sup dir)", vBotL:"e (inf esq)", vBotR:"c (inf dir)"};
+  els.segDesc.textContent = `(${col}, ${row}) → ${pos} · ${names[map.key]}`;
+  els.segDesc.className='hint ok';
+}
+
+/* Perguntas */
+function pushQA(q, a){
+  qaCount += 1;
+  const line = document.createElement('div');
+  line.style.marginBottom = '6px';
+  line.innerHTML = `<span class="pill">Q${qaCount}</span> ${q}<br><span class="pill">A</span> <em>${a}</em>`;
+  els.qa.prepend(line);
+}
+function askLC(){
+  const qAxis = els.lcType.value;
+  const id = els.lcId.value;
+  const f = flagsForCode(secret);
+  const val = qAxis==='row' ? rowCount(id, f) : colCount(id, f);
+  const axisLabel = qAxis==='row' ? 'Linha' : 'Coluna';
+  const full = `${axisLabel} ${id} = ${val}`;
+  pushQA(`${axisLabel} ${id} = ?`, full);
+  els.ansLc.textContent = full;
+}
+function askParity(){
+  const pos = Number(els.parityPos.value);
+  const label = POS_LABELS[pos];
+  const d = Number(secret[pos]);
+  const ansWord = d%2===0 ? 'par' : 'ímpar';
+  const ansText = `${label} é ${ansWord}`;
+  pushQA(`Paridade ${label} = ?`, ansText);
+  els.ansParity.textContent = ansText;
+}
+function askCmp(){
+  const pair = els.cmpPair.value;
+  const [A, B] = pair.split('-');
+  const posA = POS_LABELS.indexOf(A);
+  const posB = POS_LABELS.indexOf(B);
+  if(posA<0 || posB<0) return;
+  const a = Number(secret[posA]), b = Number(secret[posB]);
+  const ansText = (a > b) ? `${A} maior que ${B}` : `${A} menor que ${B}`;
+  pushQA(`Comparação ${A}-${B} = ?`, ansText);
+  els.ansCmp.textContent = ansText;
+}
+function askSeg(){
+  const col = els.segCol.value, row = els.segRow.value;
+  const map = segmentFromCoord(col,row);
+  if(!map){ alert('Par (coluna, linha) inválido.'); return; }
+  const f = flagsForCode(secret);
+  const val = f[map.idx][map.key] ? 'cheio' : 'vazio';
+  const full = `Segmento ${row} - ${col} = ${val}`;
+  pushQA(`Segmento ${row} - ${col} = ?`, full);
+  els.ansSeg.textContent = full;
+}
+
+/* Palpite 2x3 */
+const guessIds = ['g-T','g-U','g-V','g-W','g-X','g-Y'];
+function readGuessDigits(){
+  // Garante que só sejam considerados dígitos válidos (0–9); qualquer vazio vira '' e falha no length
+  return guessIds.map(id=>{
+    const el = document.getElementById(id);
+    const v = el ? (el.value || '') : '';
+    return /^\d$/.test(v) ? v : '';
+  }).join('');
+}
+function focusNext(fromIndex){
+  const next = Math.min(fromIndex+1, guessIds.length-1);
+  document.getElementById(guessIds[next]).focus();
+}
+function focusPrev(fromIndex){
+  const prev = Math.max(fromIndex-1, 0);
+  document.getElementById(guessIds[prev]).focus();
+}
+function wireGuessInputs(){
+  guessIds.forEach((id,idx)=>{
+    const el = document.getElementById(id);
+    el.addEventListener('input', (e)=>{
+      let v = e.target.value.replace(/\D/g,'');
+      if(v.length>1){ v = v[0]; }
+      e.target.value = v;
+      if(v.length===1 && idx<guessIds.length-1) focusNext(idx);
+    });
+    el.addEventListener('keydown', (e)=>{
+      if(e.key==='Backspace' && !e.target.value){ focusPrev(idx); }
+      if(e.key==='ArrowLeft'){ focusPrev(idx); e.preventDefault(); }
+      if(e.key==='ArrowRight'){ focusNext(idx); e.preventDefault(); }
+    });
+    el.addEventListener('paste', (e)=>{
+      const data = (e.clipboardData?.getData('text')||'').replace(/\D/g,'');
+      if(!data) return; e.preventDefault();
+      for(let i=0;i<data.length && (idx+i)<guessIds.length;i++){
+        const tgt = document.getElementById(guessIds[idx+i]);
+        tgt.value = data[i];
+      }
+      const jumpTo = Math.min(idx+data.length, guessIds.length-1);
+      document.getElementById(guessIds[jumpTo]).focus();
+    });
+  });
+}
+
+function clearGuess(focusFirst){
+  guessIds.forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+  els.guessResult.textContent = '';
+  if(focusFirst) document.getElementById('g-T').focus();
+}
+
+function clearAnswers(){
+  els.ansLc.textContent = '—';
+  els.ansParity.textContent = '—';
+  els.ansCmp.textContent = '—';
+  els.ansSeg.textContent = '—';
+}
+
+function testGuess(){
+  const g = readGuessDigits();
+  if(g.length !== 6){ // <- Corrige o caso de "6 dígitos" aparecer indevidamente
+    els.guessResult.innerHTML = '<span class="result-badge result-warn">⚠️ Preencha os 6 dígitos.</span>';
+    return;
+  }
+  if(!noAdjEquals(g)){
+    els.guessResult.innerHTML = '<span class="result-badge result-bad">🚫 Palpite inválido: contém dígitos iguais em pares adjacentes (T–U, U–V, W–X, X–Y, T–W, U–X, V–Y).</span>';
+    return;
+  }
+  if(g===secret){
+    els.guessResult.innerHTML = '<span class="result-badge result-ok">✅ Acertou! 🎉</span>';
+    revealed = true;
+    renderSecretDisplay();
+  }else{
+    els.guessResult.innerHTML = '<span class="result-badge result-bad">❌ Código errado. Limpe o palpite.</span>';
+  }
+}
+
+/* Display do código (7 segmentos) */
+function buildDigit(segs){
+  const d = document.createElement('div'); d.className='digit';
+  ['a','b','c','d','e','f','g'].forEach(k=>{
+    const s=document.createElement('div'); s.className='seg '+k+(segs && segs[k]?' on':''); d.appendChild(s);
+  });
+  return d;
+}
+function renderSecretDisplay(){
+  const top = els.rowTop, bot = els.rowBot;
+  top.innerHTML=''; bot.innerHTML='';
+  if(!revealed){
+    els.revealStatus.textContent = 'Código oculto.';
+    for(let i=0;i<3;i++) top.appendChild(buildDigit(null));
+    for(let i=0;i<3;i++) bot.appendChild(buildDigit(null));
+    return;
+  }
+  const digits = Array.from(secret).map(ch=> DIGIT_SEGS[Number(ch)]);
+  for(let i=0;i<3;i++) top.appendChild(buildDigit(digits[i]));
+  for(let i=3;i<6;i++) bot.appendChild(buildDigit(digits[i]));
+  els.revealStatus.textContent = `Código: ${secret}`;
+}
+
+/* Compartilhamento: atualizar ID e aplicar via URL/entrada */
+function updateShare(){
+  const id = encodeId(secret);
+  els.shareId.textContent = id;
+  const url = new URL(window.location.href);
+  url.searchParams.set('id', id);
+  history.replaceState(null,'',url);
+}
+function applyId(id){
+  const code = decodeId(id);
+  if(!code || !noAdjEquals(code)){ alert('ID inválido.'); return false; }
+  secret = code;
+  revealed = false;
+  qaCount = 0;
+  document.getElementById('game-status').textContent = 'Código aplicado via ID.';
+  document.getElementById('reveal-status').textContent = '';
+  document.getElementById('qa').innerHTML = '';
+  clearAnswers();
+  clearGuess(false);
+  renderSecretDisplay();
+  updateShare();
+  return true;
+}
+
+/* ==== Autotestes simples (não alteram o jogo) ==== */
+function runSelfTests(){
+  try{
+    const requiredIds = ['btn-new','game-status','ask-lc','lc-type','lc-id','ask-parity','parity-pos','ask-cmp','cmp-pair','seg-col','seg-row','ask-seg','qa','btn-clear-qa','btn-guess','btn-clear-guess','row-top','row-bot','btn-reveal','reveal-status','share-id','join-id','btn-join-id'];
+    requiredIds.forEach(id=>{ if(!document.getElementById(id)) throw new Error('Elemento ausente: '+id); });
+  }catch(err){
+    console.warn('[SelfTest] Falhou:', err.message);
+  }
+}
+
+/* Eventos + init (tudo ligado após DOM existir) */
+function init(){
+  // cache de elementos
+  els = {
+    lcType: document.getElementById('lc-type'),
+    lcId: document.getElementById('lc-id'),
+    askLc: document.getElementById('ask-lc'),
+    ansLc: document.getElementById('ans-lc'),
+
+    parityPos: document.getElementById('parity-pos'),
+    askParity: document.getElementById('ask-parity'),
+    ansParity: document.getElementById('ans-parity'),
+
+    cmpPair: document.getElementById('cmp-pair'),
+    askCmp: document.getElementById('ask-cmp'),
+    ansCmp: document.getElementById('ans-cmp'),
+
+    segCol: document.getElementById('seg-col'),
+    segRow: document.getElementById('seg-row'),
+    askSeg: document.getElementById('ask-seg'),
+    segDesc: document.getElementById('seg-desc'),
+    ansSeg: document.getElementById('ans-seg'),
+
+    qa: document.getElementById('qa'),
+    btnClearQA: document.getElementById('btn-clear-qa'),
+
+    btnGuess: document.getElementById('btn-guess'),
+    btnClearGuess: document.getElementById('btn-clear-guess'),
+    guessResult: document.getElementById('guess-result'),
+
+    btnNew: document.getElementById('btn-new'),
+    btnReveal: document.getElementById('btn-reveal'),
+    revealStatus: document.getElementById('reveal-status'),
+
+    rowTop: document.getElementById('row-top'),
+    rowBot: document.getElementById('row-bot'),
+    labelsTop: document.getElementById('labels-top'),
+    labelsBot: document.getElementById('labels-bot'),
+
+    shareId: document.getElementById('share-id'),
+    joinId: document.getElementById('join-id'),
+    btnJoinId: document.getElementById('btn-join-id'),
+  };
+
+  fillSelectors();
+  wireGuessInputs();
+  renderSecretDisplay();
+
+  try { window.scrollTo({top:0,left:0,behavior:'auto'}); } catch(e) { window.scrollTo(0,0); }
+
+  els.askLc.addEventListener('click', askLC);
+  els.askParity.addEventListener('click', askParity);
+  els.askCmp.addEventListener('click', askCmp);
+  els.askSeg.addEventListener('click', askSeg);
+  els.btnGuess.addEventListener('click', testGuess);
+  els.btnClearGuess.addEventListener('click', ()=>clearGuess(true));
+  els.btnNew.addEventListener('click', ()=>{
+    if(confirm('Tem certeza que deseja sortear um novo código?\nIsso limpará o histórico e as respostas.')) setNewSecret();
+  });
+  els.btnReveal.addEventListener('click', ()=>{
+    if(confirm('Tem certeza que deseja revelar o código?')){ revealed = true; renderSecretDisplay(); }
+  });
+  els.btnClearQA.addEventListener('click', ()=>{ els.qa.innerHTML=''; qaCount = 0; });
+
+  // ENTRAR POR ID: força UPPERCASE e apenas alfanuméricos, e aplica
+  els.joinId.addEventListener('input', ()=>{
+    const clean = els.joinId.value.toUpperCase().replace(/[^0-9A-Z]/g,'');
+    if(els.joinId.value !== clean) els.joinId.value = clean;
+  });
+  els.btnJoinId.addEventListener('click', ()=>{
+    const id = els.joinId.value.trim();
+    if(id) applyId(id);
+  });
+
+  // Se chegar com ?id= na URL, aplicar
+  const urlIdParam = new URL(window.location.href).searchParams.get('id');
+  if(urlIdParam){
+    const clean = urlIdParam.toUpperCase().replace(/[^0-9A-Z]/g,'');
+    if(decodeId(clean)) applyId(clean); else updateShare();
+  } else {
+    updateShare();
+  }
+
+  runSelfTests();
+}
+
+if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', init, {once:true});
+else { init(); }
+</script>
+</body>
+</html>
