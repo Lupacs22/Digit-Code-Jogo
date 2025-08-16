@@ -3,11 +3,11 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Digit Code – Modo Jogo (7 segmentos) • com ID</title>
+<title>Digit Code – Modo Jogo (7 segmentos) • ID 5 letras (sem mudar URL)</title>
 <style>
   :root { 
     --btn-fz: 14px;
-    --ans-fz: 14px;
+    --ans-fz: 14px;   /* unificado para 14 */
     --ans-fw: 700;
 
     --lc-fg: #0a2a7a;   --lc-bg: #eaf1ff; --lc-bd: #6a8cff;
@@ -27,7 +27,6 @@
   button { padding: 8px 10px; border: 1px solid #999; background: #f6f6f6; border-radius: 6px; cursor: pointer; font-size: var(--btn-fz); }
   button:hover { background: #eee; }
 
-  /* Layout principal: 2 colunas; no mobile vira 1 */
   .wrap { display: grid; grid-template-columns: 380px 1fr; gap: 16px; align-items: start; position: relative; }
   .wrap > div { position: relative; z-index: 0; }
   .wrap > div:first-child { z-index: 2; }
@@ -38,43 +37,22 @@
   .hint { color:#555; font-size:12px; }
   .muted { color:#666; font-size:12px; }
   .pill { display:inline-block; padding: 2px 6px; font-size: 12px; border-radius: 999px; background:#eef; border:1px solid #99c; margin-right:6px; }
-  .pill.bold { font-weight: 700; } /* ID em negrito */
+  .pill.bold { font-weight: 700; }
   .list { border:1px solid #ddd; border-radius:8px; padding:10px; height:240px; overflow:auto; background:#fff; }
-  .ok { color:#0a5; font-weight:600; }
-  .bad { color:#b00; font-weight:600; }
 
-  /* badges de resposta */
-  .ans-badge {
-    font-size: var(--ans-fz);
-    font-weight: var(--ans-fw);
-    line-height: 1;
-    border-radius: 999px;
-    padding: 6px 12px;
-    border: 2px solid transparent;
-    box-shadow: 0 1px 0 rgba(0,0,0,.05);
-    white-space: nowrap;
-  }
-  .ans-lc  { color: var(--lc-fg);  background: var(--lc-bg);  border-color: var(--lc-bd); font-size:14px; padding:5px 10px; }
+  /* Badges (14px) */
+  .ans-badge { font-size: var(--ans-fz); font-weight: var(--ans-fw); line-height: 1; border-radius: 999px; padding: 6px 12px; border: 2px solid transparent; box-shadow: 0 1px 0 rgba(0,0,0,.05); white-space: nowrap; }
+  .ans-lc  { color: var(--lc-fg);  background: var(--lc-bg);  border-color: var(--lc-bd); }
   .ans-par { color: var(--par-fg); background: var(--par-bg); border-color: var(--par-bd); }
   .ans-cmp { color: var(--cmp-fg); background: var(--cmp-bg); border-color: var(--cmp-bd); }
   .ans-seg { color: var(--seg-fg); background: var(--seg-bg); border-color: var(--seg-bd); }
 
-  /* Resultado do palpite (badge grande) */
-  .result-badge {
-    font-size: 14px;
-    font-weight: 800;
-    line-height: 1;
-    border-radius: 999px;
-    padding: 8px 14px;
-    border: 2px solid transparent;
-    display: inline-block;
-    box-shadow: 0 1px 0 rgba(0,0,0,.05);
-  }
+  /* Resultado do palpite (também 14px para unificar) */
+  .result-badge { font-size: 14px; font-weight: 800; line-height: 1; border-radius: 999px; padding: 6px 12px; border: 2px solid transparent; display: inline-block; box-shadow: 0 1px 0 rgba(0,0,0,.05); }
   .result-ok   { color: var(--par-fg); background: var(--par-bg); border-color: var(--par-bd); }
   .result-warn { color: var(--cmp-fg); background: var(--cmp-bg); border-color: var(--cmp-bd); }
   .result-bad  { color: #7a0a0a; background: #ffecec; border-color: #ff9a9a; }
 
-  /* Display 7 segmentos */
   .seven-wrap { margin-top:8px; }
   .seven-row { display:flex; gap:20px; margin-bottom: 8px; justify-content: center; }
   .digit { position: relative; width: 76px; height: 126px; }
@@ -91,11 +69,9 @@
   .seg.e { top: 70px; height: 40px; }
   .seg.c { top: 70px; height: 40px; }
 
-  /* Legendas acima dos dígitos (sempre visíveis, negrito) */
   .labels { display:flex; gap:20px; width:max-content; margin: 0 auto 6px; font-weight:700; }
   .labels span { display:inline-block; width:76px; text-align:center; font-size:13px; color:#222; }
 
-  /* Mobile: reduz tamanho dos dígitos */
   @media (max-width: 480px){
     .digit { width: 60px; height: 102px; }
     .seg.a, .seg.g, .seg.d { left: 10px; right: 10px; height: 8px; }
@@ -111,14 +87,12 @@
     .labels span { width: 60px; }
   }
 
-  /* Palpite 2x3 */
   .guess-grid { display:grid; grid-template-columns: repeat(3,56px); grid-auto-rows: 56px; gap:10px; align-items:center; justify-content:center; }
   .guess-cell { display:flex; align-items:center; justify-content:center; }
   .guess-input { width:100%; height:100%; text-align:center; font-size:22px; border:1px solid #bbb; border-radius:8px; }
   .guess-actions { display:flex; gap:10px; align-items:center; justify-content:center; margin-top:10px; flex-wrap:wrap; }
 
-  /* Destaque de status do jogo */
-  #game-status { font-size: 14px; font-weight: 800; }
+  #game-status { font-size: 16px; font-weight: 800; }
 </style>
 </head>
 <body>
@@ -129,7 +103,6 @@
   </div></br>
 
   <div class="wrap">
-    <!-- Coluna ESQUERDA: perguntas e histórico -->
     <div>
       <fieldset>
         <legend>Novo jogo</legend>
@@ -147,7 +120,7 @@
           <div>
             <label for="join-id">Entrar por ID</label>
             <div class="actions" style="gap:6px;">
-              <input id="join-id" type="text" placeholder="ex.: AB12C3F" style="flex:1; min-width:140px;" />
+              <input id="join-id" type="text" placeholder="ex.: ABCDE" style="flex:1; min-width:140px;" />
               <button id="btn-join-id" type="button">Usar ID</button>
             </div>
           </div>
@@ -217,7 +190,7 @@
             <select id="seg-row"></select>
           </div>
         </div>
-        <div class="hint" id="seg-desc">Ex.: (B, L)= segmento g de T; (E, Q)= g de X; (A, K)= f de T; (C, R)= c de W.</div>
+        <div class="hint" id="seg-desc">Ex.: (B, L)= g de T; (E, Q)= g de X; (A, K)= f de T; (C, R)= c de W.</div>
         <div class="actions" style="margin-top:6px">
           <button id="ask-seg">Perguntar</button>
           <span id="ans-seg" class="ans-badge ans-seg">—</span>
@@ -250,7 +223,6 @@
       </fieldset>
     </div>
 
-    <!-- Coluna DIREITA (vai para baixo no mobile) -->
     <div>
       <fieldset>
         <legend>Display (7 segmentos)</legend>
@@ -259,8 +231,6 @@
           <button id="btn-reveal">Revelar código</button>
           <span id="reveal-status" class="muted"></span>
         </div>
-
-        <!-- Legendas ACIMA (negrito) – agora SEMPRE visíveis -->
         <div id="labels-top" class="labels"><span>T</span><span>U</span><span>V</span></div>
         <div class="seven-wrap">
           <div class="seven-row" id="row-top"></div>
@@ -282,42 +252,6 @@ const H_ROWS   = new Set(['J','L','N','O','Q','S']);
 const V_ROWS   = new Set(['K','M','P','R']);
 const H_COLS   = new Set(['B','E','H']);
 const V_COLS   = new Set(['A','C','D','F','G','I']);
-
-/* ===== Compartilhamento por ID (sem backend) ===== */
-/* Agora o ID é apenas alfanumérico (sem hífen) e UPPERCASE */
-const XOR_MASK = 0xA5B6C; // 676332
-const toB36 = n => n.toString(36).toUpperCase();
-const fromB36 = s => parseInt(s,36);
-/* Gera ID: base36(m) + chk(base36 de 2 chars), sem separadores */
-function encodeId(codeStr){
-  const n = parseInt(codeStr,10);
-  if (!Number.isFinite(n)) return null;
-  const m = n ^ XOR_MASK;
-  const chk = m % 97;
-  const base = m.toString(36).toUpperCase();         // 0-9A-Z
-  const chk2 = chk.toString(36).toUpperCase().padStart(2,'0'); // 2 chars
-  const raw = base + chk2;
-  // Mapear dígitos 0-9 -> letras K-T (0->K, 1->L, ..., 9->T) para ficar somente A-Z
-  const mapped = raw.replace(/[0-9]/g, ch => String.fromCharCode('K'.charCodeAt(0) + (ch.charCodeAt(0) - 48)));
-  return mapped;
-}
-/* Decodifica: últimos 2 chars = checksum; resto = base */
-function decodeId(id){
-  // Manter apenas letras A-Z (ID deve ser somente letras)
-  const cleanLetters = (id||'').toUpperCase().replace(/[^A-Z]/g,'');
-  // Desmapear K-T -> 0-9
-  const demapped = cleanLetters.replace(/[K-T]/g, ch => '0123456789'[ch.charCodeAt(0) - 'K'.charCodeAt(0)]);
-  if (demapped.length < 3) return null;
-  const base = demapped.slice(0, -2);
-  const chkStr = demapped.slice(-2);
-  const m = parseInt(base, 36);
-  const chk = parseInt(chkStr, 36);
-  if (Number.isNaN(m) || Number.isNaN(chk)) return null;
-  if (m % 97 !== chk) return null;
-  const n = m ^ XOR_MASK;
-  if (!(n >= 0 && n <= 999999)) return null;
-  return n.toString().padStart(6, '0');
-}
 
 /* 7 segmentos por dígito */
 const DIGIT_SEGS = {
@@ -372,7 +306,7 @@ function rowCount(row,f){
   if(row==='O') return f[3].hTop + f[4].hTop + f[5].hTop;
   if(row==='P') return (f[3].vTopL+f[3].vTopR) + (f[4].vTopL+f[4].vTopR) + (f[5].vTopL+f[5].vTopR);
   if(row==='Q') return f[3].hMid + f[4].hMid + f[5].hMid;
-  if(row==='R') return (f[3].vBotL+f[3].vBotR) + (f[4].vBotL+f[4].vBotR) + (f[5].vBotL+f[5].vBotR);
+  if(row==='R') return (f[3].vBotL+f[3].vBotL) + (f[4].vBotL+f[4].vBotL) + (f[5].vBotL+f[5].vBotL);
   if(row==='S') return f[3].hBot + f[4].hBot + f[5].hBot;
   return null;
 }
@@ -395,7 +329,49 @@ function noAdjEquals(code){
   return (d[0]!==d[1] && d[1]!==d[2] && d[3]!==d[4] && d[4]!==d[5] && d[0]!==d[3] && d[1]!==d[4] && d[2]!==d[5]);
 }
 
-/* Estado do jogo */
+/* ===== ID 5 letras (base 2^20 + checksum mod 11) — NÃO altera o URL ===== */
+const XOR_MASK = 0xA5B6C;           // 678,764
+const BASE_M   = 1 << 20;           // 1.048.576
+
+function toBase26Letters(num){
+  let n = Math.floor(num);
+  const out = Array(5).fill('A');
+  for(let i=4;i>=0;i--){
+    const r = n % 26;
+    out[i] = String.fromCharCode(65 + r);
+    n = Math.floor(n/26);
+  }
+  return out.join('');
+}
+function fromBase26Letters(str){
+  if(!/^[A-Z]{5}$/.test(str)) return NaN;
+  let v=0;
+  for(let i=0;i<5;i++){
+    v = v*26 + (str.charCodeAt(i)-65);
+  }
+  return v;
+}
+function encodeId(codeStr){
+  const n = parseInt(codeStr,10);
+  if(!Number.isFinite(n)) return null;
+  const m = n ^ XOR_MASK;          
+  const chk = m % 11;              
+  const w = chk*BASE_M + m;        
+  return toBase26Letters(w);       
+}
+function decodeId(id){
+  const clean = (id||'').toUpperCase().replace(/[^A-Z]/g,'');
+  if(clean.length!==5) return null;
+  const w = fromBase26Letters(clean);
+  if(!Number.isFinite(w)) return null;
+  const chk = Math.floor(w/BASE_M);
+  const m = w % BASE_M;
+  if(chk !== (m % 11)) return null;
+  const n = m ^ XOR_MASK;
+  if(!(n>=0 && n<=999999)) return null;
+  return n.toString().padStart(6, '0');
+}
+
 function randomCode(){
   while(true){
     const c = Math.floor(Math.random()*1_000_000).toString().padStart(6,'0');
@@ -406,27 +382,10 @@ let secret = randomCode();
 let revealed = false;
 let qaCount = 0;
 
-/* ===== Novo: função única pra sortear + limpar ===== */
-function setNewSecret(){
-  secret = randomCode();
-  revealed = false;
-  qaCount = 0;
-  document.getElementById('game-status').textContent = 'Novo código sorteado!';
-  document.getElementById('reveal-status').textContent = '';
-  // Limpar histórico + respostas + palpite
-  document.getElementById('qa').innerHTML = '';
-  clearAnswers();
-  clearGuess(true);
-  renderSecretDisplay(); // display apagado (mas com legendas visíveis)
-  updateShare();
-}
-
-/* Helpers UI */
-let els = {};
 function option(text, value){ const o=document.createElement('option'); o.textContent=text; o.value=value; return o; }
 
+let els = {};
 function fillSelectors(){
-  // Linha/Coluna
   function fillLcIds(){
     const labels = els.lcType.value==='col' ? COL_LABELS : ROW_LABELS;
     els.lcId.innerHTML=''; labels.forEach(l=> els.lcId.appendChild(option(l,l)));
@@ -435,35 +394,28 @@ function fillSelectors(){
   els.lcType.addEventListener('change', ()=>{ fillLcIds(); els.ansLc.textContent='—'; });
   els.lcId.addEventListener('change', ()=>{ els.ansLc.textContent='—'; });
 
-  // Paridade
   els.parityPos.innerHTML=''; POS_LABELS.forEach((p,i)=> els.parityPos.appendChild(option(p,i)));
   els.parityPos.addEventListener('change', ()=>{ els.ansParity.textContent='—'; });
 
-  // Segmentos: popular colunas e, ao escolher uma, filtrar linhas cabíveis
   els.segCol.innerHTML=''; COL_LABELS.forEach(l=> els.segCol.appendChild(option(l,l)));
   refillSegRows();
   els.segCol.addEventListener('change', ()=>{ refillSegRows(); els.ansSeg.textContent='—'; updateSegDesc(); });
   els.segRow.addEventListener('change', ()=>{ els.ansSeg.textContent='—'; updateSegDesc(); });
 
-  // Comparação
   els.cmpPair.addEventListener('change', ()=>{ els.ansCmp.textContent='—'; });
-
   updateSegDesc();
 }
-
 function refillSegRows(){
   const col = els.segCol.value;
   let rowsAllowed = [];
   if(H_COLS.has(col)) rowsAllowed = Array.from(H_ROWS);
   else if(V_COLS.has(col)) rowsAllowed = Array.from(V_ROWS);
-  else rowsAllowed = ROW_LABELS.slice(); // fallback
-  // preservar seleção se ainda for válida
+  else rowsAllowed = ROW_LABELS.slice();
   const prev = els.segRow.value;
   els.segRow.innerHTML='';
   rowsAllowed.forEach(r=> els.segRow.appendChild(option(r,r)));
   if(rowsAllowed.includes(prev)) els.segRow.value = prev;
 }
-
 function updateSegDesc(){
   const col = els.segCol.value, row = els.segRow.value;
   const map = segmentFromCoord(col,row);
@@ -474,7 +426,6 @@ function updateSegDesc(){
   els.segDesc.className='hint ok';
 }
 
-/* Perguntas */
 function pushQA(q, a){
   qaCount += 1;
   const line = document.createElement('div');
@@ -526,21 +477,14 @@ function askSeg(){
 /* Palpite 2x3 */
 const guessIds = ['g-T','g-U','g-V','g-W','g-X','g-Y'];
 function readGuessDigits(){
-  // Garante que só sejam considerados dígitos válidos (0–9); qualquer vazio vira '' e falha no length
   return guessIds.map(id=>{
     const el = document.getElementById(id);
     const v = el ? (el.value || '') : '';
     return /^\d$/.test(v) ? v : '';
   }).join('');
 }
-function focusNext(fromIndex){
-  const next = Math.min(fromIndex+1, guessIds.length-1);
-  document.getElementById(guessIds[next]).focus();
-}
-function focusPrev(fromIndex){
-  const prev = Math.max(fromIndex-1, 0);
-  document.getElementById(guessIds[prev]).focus();
-}
+function focusNext(fromIndex){ const next = Math.min(fromIndex+1, guessIds.length-1); document.getElementById(guessIds[next]).focus(); }
+function focusPrev(fromIndex){ const prev = Math.max(fromIndex-1, 0); document.getElementById(guessIds[prev]).focus(); }
 function wireGuessInputs(){
   guessIds.forEach((id,idx)=>{
     const el = document.getElementById(id);
@@ -573,17 +517,15 @@ function clearGuess(focusFirst){
   els.guessResult.textContent = '';
   if(focusFirst) document.getElementById('g-T').focus();
 }
-
 function clearAnswers(){
   els.ansLc.textContent = '—';
   els.ansParity.textContent = '—';
   els.ansCmp.textContent = '—';
   els.ansSeg.textContent = '—';
 }
-
 function testGuess(){
   const g = readGuessDigits();
-  if(g.length !== 6){ // <- Corrige o caso de "6 dígitos" aparecer indevidamente
+  if(g.length !== 6){
     els.guessResult.innerHTML = '<span class="result-badge result-warn">⚠️ Preencha os 6 dígitos.</span>';
     return;
   }
@@ -596,11 +538,11 @@ function testGuess(){
     revealed = true;
     renderSecretDisplay();
   }else{
-    els.guessResult.innerHTML = '<span class="result-badge result-bad">❌ Código errado. Limpe o palpite.</span>';
+    els.guessResult.innerHTML = '<span class="result-badge result-bad">❌ Ainda não. Tente outra.</span>';
   }
 }
 
-/* Display do código (7 segmentos) */
+/* Display */
 function buildDigit(segs){
   const d = document.createElement('div'); d.className='digit';
   ['a','b','c','d','e','f','g'].forEach(k=>{
@@ -623,79 +565,64 @@ function renderSecretDisplay(){
   els.revealStatus.textContent = `Código: ${secret}`;
 }
 
-/* Compartilhamento: atualizar ID e aplicar via URL/entrada */
-function updateShare(){
+/* Compartilhar por ID (SEM mexer na URL) */
+function refreshShareId(){
   const id = encodeId(secret);
   els.shareId.textContent = id;
-  const url = new URL(window.location.href);
-  url.searchParams.set('id', id);
-  history.replaceState(null,'',url);
 }
 function applyId(id){
-  const code = decodeId(id);
-  if(!code || !noAdjEquals(code)){ alert('ID inválido.'); return false; }
-  secret = code;
-  revealed = false;
-  qaCount = 0;
-  document.getElementById('game-status').textContent = 'Código aplicado via ID.';
+  try{
+    if(!id || typeof id !== 'string'){ alert('ID inválido.'); return false; }
+    const cleaned = id.toUpperCase().replace(/[^A-Z]/g,'');
+    const code = decodeId(cleaned);
+    if(!code || !noAdjEquals(code)){ alert('ID inválido.'); return false; }
+    secret = code; revealed = false; qaCount = 0;
+    var gs = document.getElementById('game-status'); if(gs) gs.textContent = 'Código aplicado via ID.';
+    var rs = document.getElementById('reveal-status'); if(rs) rs.textContent = '';
+    var qa = document.getElementById('qa'); if(qa) qa.innerHTML = '';
+    clearAnswers(); clearGuess(false); renderSecretDisplay(); refreshShareId();
+    return true;
+  }catch(_e){ alert('ID inválido.'); return false; }
+}
+
+/* Estado inicial + eventos */
+function setNewSecret(){
+  secret = randomCode(); revealed = false; qaCount = 0;
+  document.getElementById('game-status').textContent = 'Novo código sorteado!';
   document.getElementById('reveal-status').textContent = '';
   document.getElementById('qa').innerHTML = '';
-  clearAnswers();
-  clearGuess(false);
-  renderSecretDisplay();
-  updateShare();
-  return true;
+  clearAnswers(); clearGuess(true); renderSecretDisplay(); refreshShareId();
 }
 
-/* ==== Autotestes simples (não alteram o jogo) ==== */
-function runSelfTests(){
-  try{
-    const requiredIds = ['btn-new','game-status','ask-lc','lc-type','lc-id','ask-parity','parity-pos','ask-cmp','cmp-pair','seg-col','seg-row','ask-seg','qa','btn-clear-qa','btn-guess','btn-clear-guess','row-top','row-bot','btn-reveal','reveal-status','share-id','join-id','btn-join-id'];
-    requiredIds.forEach(id=>{ if(!document.getElementById(id)) throw new Error('Elemento ausente: '+id); });
-  }catch(err){
-    console.warn('[SelfTest] Falhou:', err.message);
-  }
-}
-
-/* Eventos + init (tudo ligado após DOM existir) */
 function init(){
-  // cache de elementos
   els = {
     lcType: document.getElementById('lc-type'),
     lcId: document.getElementById('lc-id'),
     askLc: document.getElementById('ask-lc'),
     ansLc: document.getElementById('ans-lc'),
-
     parityPos: document.getElementById('parity-pos'),
     askParity: document.getElementById('ask-parity'),
     ansParity: document.getElementById('ans-parity'),
-
     cmpPair: document.getElementById('cmp-pair'),
     askCmp: document.getElementById('ask-cmp'),
     ansCmp: document.getElementById('ans-cmp'),
-
     segCol: document.getElementById('seg-col'),
     segRow: document.getElementById('seg-row'),
     askSeg: document.getElementById('ask-seg'),
     segDesc: document.getElementById('seg-desc'),
     ansSeg: document.getElementById('ans-seg'),
-
     qa: document.getElementById('qa'),
     btnClearQA: document.getElementById('btn-clear-qa'),
-
     btnGuess: document.getElementById('btn-guess'),
     btnClearGuess: document.getElementById('btn-clear-guess'),
     guessResult: document.getElementById('guess-result'),
-
     btnNew: document.getElementById('btn-new'),
     btnReveal: document.getElementById('btn-reveal'),
     revealStatus: document.getElementById('reveal-status'),
-
     rowTop: document.getElementById('row-top'),
     rowBot: document.getElementById('row-bot'),
     labelsTop: document.getElementById('labels-top'),
     labelsBot: document.getElementById('labels-bot'),
-
     shareId: document.getElementById('share-id'),
     joinId: document.getElementById('join-id'),
     btnJoinId: document.getElementById('btn-join-id'),
@@ -704,7 +631,6 @@ function init(){
   fillSelectors();
   wireGuessInputs();
   renderSecretDisplay();
-
   try { window.scrollTo({top:0,left:0,behavior:'auto'}); } catch(e) { window.scrollTo(0,0); }
 
   els.askLc.addEventListener('click', askLC);
@@ -721,26 +647,18 @@ function init(){
   });
   els.btnClearQA.addEventListener('click', ()=>{ els.qa.innerHTML=''; qaCount = 0; });
 
-  // ENTRAR POR ID: força UPPERCASE e apenas alfanuméricos, e aplica
+  // ENTRAR POR ID: força A–Z e aplica
   els.joinId.addEventListener('input', ()=>{
-    const clean = els.joinId.value.toUpperCase().replace(/[^0-9A-Z]/g,'');
+    const clean = (els.joinId.value||'').toUpperCase().replace(/[^A-Z]/g,'');
     if(els.joinId.value !== clean) els.joinId.value = clean;
   });
   els.btnJoinId.addEventListener('click', ()=>{
-    const id = els.joinId.value.trim();
-    if(id) applyId(id);
+    const id = (els.joinId.value||'').toUpperCase().replace(/[^A-Z]/g,'');
+    if(id) applyId(id); else alert('Informe um ID.');
   });
 
-  // Se chegar com ?id= na URL, aplicar
-  const urlIdParam = new URL(window.location.href).searchParams.get('id');
-  if(urlIdParam){
-    const clean = urlIdParam.toUpperCase().replace(/[^A-Z]/g,'');
-    if(decodeId(clean)) applyId(clean); else updateShare();
-  } else {
-    updateShare();
-  }
-
-  runSelfTests();
+  // NÃO mexe no URL. Apenas mostra o ID do código atual:
+  refreshShareId();
 }
 
 if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', init, {once:true});
